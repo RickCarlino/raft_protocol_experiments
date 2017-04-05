@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "ts-node index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -13,6 +14,7 @@
     "@types/irc": "^0.3.32",
     "@types/uuid": "^2.0.29",
     "irc": "^0.5.2",
+    "lodash": "^4.17.4",
     "ts-node": "^3.0.2",
     "typescript": "^2.2.2",
     "uuid": "^3.0.1"
