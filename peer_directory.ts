@@ -10,6 +10,7 @@ export class PeerDirectory {
   remove = (name: string) => { delete this.dir[name]; }
   randomPeer = () => sample(Object.keys(this.dir));
   addVote = (name: string) => { this.dir[name].votes += 1; }
+  iAmLeader = () => (this.currentLeader.name === this.ME);
   map = <T>(iterator: (p: PeerInfo) => T): T[] => {
     return Object.keys(this.dir).map(n => this.dir[n]).map(iterator);
   }
