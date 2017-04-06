@@ -76,18 +76,25 @@ export class RaftNode {
 
   heartBeat = () => {
     if (this.amLeader) {
+      L`Im the leader, so I will send append entries.`
       this.send(APPEND_ENTRIES);
+    } else {
+      L`Not leader. Won't append`
     }
   }
 
   maybeVote = (name: string, term: number) => {
     if (term > this.electionTerm) {
+      L`I'm going to vote.`
       this.electionTerm = term;
       this.send(`${VOTE_OK} ${name}`);
+    } else {
+      L`I won't vote!`
     }
   }
 
   startElection = () => {
+    L`Starting election..`
     this.electionTerm += 1;
     this.peers.resetVotes();
     this.send(`${REQ_VOTE} ${this.electionTerm}`);
@@ -97,9 +104,12 @@ export class RaftNode {
     /** When did I hear from the leader last? */
     let { lastSeen } = this.peers.currentLeader();
     if (timeDiff(lastSeen) > randomInterval) {
+      L`ELECTION HAS TIMED OUT!`
       this.state = CANDIDATE;
       this.startElection();
       this.peers.addVote(this.name);
+    } else {
+      L`Election has not timed out....yet`
     }
   }
 
@@ -107,12 +117,15 @@ export class RaftNode {
   constructor() {
     this.name = randomName();
     this.peers = new PeerDirectory(this.name);
+    L`Booting up....`
     connection(this.messageHandler, this.name)
       .then(send => {
         // Don't do polling until we're connected.
         // And even then, give it 4 seconds because IRC is slow.
         this.send = send;
+        L`Connected. Waiting 4s.`
         setTimeout(() => {
+          L`Ready! Start polling.`
           randomPolling(this.onElectionTimeout);
           setInterval(this.heartBeat, HEARTBEAT_TIMEOUT);
         }, 4000);
@@ -120,3 +133,4 @@ export class RaftNode {
   }
 }
 
+function L(message: TemplateStringsArray) { console.log(message.join("")); }
