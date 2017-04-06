@@ -41,7 +41,8 @@ export class RaftNode {
         this.append();
         break;
       case JOIN:
-        this.peers.upsert(from);
+        L`ADDING PEER!`
+        this.peers.add(from);
         break;
       case REQ_VOTE:
         this.maybeVote(from, parseInt(tokens.slice(-1)[0]));
@@ -56,18 +57,28 @@ export class RaftNode {
   };
 
   maybeRead = () => {
-    if (this.amLeader) { this.send(this.value); }
+    if (this.amLeader) {
+      L`IM THE LEADER I WILL READ`
+      this.send(this.value);
+    } else {
+      L`Not leader, wont read.`
+    }
   }
 
   maybeWrite = (value: string) => {
     if (this.amLeader) {
       this.send("I haven't written a means of commiting data yet, " +
         "but if we had, I would be the leader.");
+    } else {
+      L`Not leader, won't write.`
     }
   }
 
   append = () => {
-    console.log("Got an append message. So, what?");
+    let winner = this.peers.currentWinner();
+    this.peers.markAsSeen(winner.name);
+    console.log("Got an append message. Marking leader as 'seen'." +
+      " TODO: Everything else.");
   }
 
   countVoteFor = (name: string) => {
@@ -76,7 +87,7 @@ export class RaftNode {
 
   heartBeat = () => {
     if (this.amLeader) {
-      L`Im the leader, so I will send append entries.`
+      L`Im the leader, so I will request append entries.`
       this.send(APPEND_ENTRIES);
     } else {
       L`Not leader. Won't append`
@@ -87,6 +98,8 @@ export class RaftNode {
     if (term > this.electionTerm) {
       L`I'm going to vote.`
       this.electionTerm = term;
+      this.peers.resetVotes();
+      this.peers.addVote(name);
       this.send(`${VOTE_OK} ${name}`);
     } else {
       L`I won't vote!`
@@ -102,8 +115,9 @@ export class RaftNode {
 
   onElectionTimeout = (randomInterval: number) => {
     /** When did I hear from the leader last? */
-    let { lastSeen } = this.peers.currentLeader();
-    if (timeDiff(lastSeen) > randomInterval) {
+    let leader = this.peers.currentWinner();
+    let { lastSeen } = leader;
+    if ((this.name === leader.name) || timeDiff(lastSeen) > randomInterval) {
       L`ELECTION HAS TIMED OUT!`
       this.state = CANDIDATE;
       this.startElection();
@@ -125,10 +139,15 @@ export class RaftNode {
         this.send = send;
         L`Connected. Waiting 4s.`
         setTimeout(() => {
-          L`Ready! Start polling.`
+          L`WHERE WE LAST LEFT OFF:
+            * The send(JOIN) below does not send.
+            * As a result, peers never get added to the directory.
+            * As a result, every peer thinks it is a leader.
+          `
+          this.send(JOIN);
           randomPolling(this.onElectionTimeout);
           setInterval(this.heartBeat, HEARTBEAT_TIMEOUT);
-        }, 4000);
+        }, 1000);
       });
   }
 }
