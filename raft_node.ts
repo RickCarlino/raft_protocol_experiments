@@ -131,6 +131,11 @@ export class RaftNode {
 
   /** Send string to room. */
   constructor() {
+    console.log(`
+    WHERE I LEFT OFF:
+     * Fixed issues where nodes did not see peers that joined before them.
+     * Need to go back to docs and finish this.append() logic.
+    `)
     this.name = randomName();
     this.peers = new PeerDirectory(this.name);
     L`Booting up....`
