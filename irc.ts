@@ -1,6 +1,6 @@
 import * as irc from "irc";
 import * as uuid from "uuid";
-import { IRC_SERVER, IRC_CHANNEL } from "./consts";
+import { IRC_SERVER, IRC_CHANNEL, JOIN } from "./consts";
 import { timestamp, timeDiff } from "./util";
 
 // SEE:
@@ -17,8 +17,17 @@ export function connection(handler: MessageHandler, name: string) {
     c.addListener("error", e => console.log(`${JSON.stringify(e)}`));
     console.log(`Connecting to ${IRC_CHANNEL} on ${IRC_SERVER} as ${name}`);
     c.addListener("message", (from, _, msg) => handler(from, msg));
-    c.addListener("connect", function () {
-      let x = "HERE: " + Object.keys(c.chans[IRC_CHANNEL].users).join(", ");
+    c.addListener(`names${IRC_CHANNEL}`, function (names) {
+      console.log("NAMES!!!")
+      Object
+        .keys(names)
+        .map(peerName => {
+          let isPeer = peerName.includes("RAFT");
+          let notMe = peerName !== name;
+          (isPeer && notMe) ? handler(peerName, JOIN) : "";
+        });
+    })
+    c.addListener(`join${IRC_CHANNEL}`, function () {
       function sender(message: string) {
         if (timeDiff(last) < 1000) {
           console.log("flood protection" + timeDiff(last))
