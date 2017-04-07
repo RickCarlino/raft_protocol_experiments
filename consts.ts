@@ -1,5 +1,5 @@
 export const IRC_CHANNEL = "#raft_expirements";
-export const IRC_SERVER = "irc.efnet.info";
+export const IRC_SERVER = "irc.2600.net";
 
 export const FOLLOWER = "follower";
 export const CANDIDATE = "candidate";

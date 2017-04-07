@@ -45,10 +45,12 @@ export class RaftNode {
         this.peers.add(from);
         break;
       case REQ_VOTE:
-        this.maybeVote(from, parseInt(tokens.slice(-1)[0]));
+        console.log("Maybe voting in term " + tokens[1]);
+        this.maybeVote(from, parseInt(tokens[1]));
         break;
       case VOTE_OK:
-        this.countVoteFor(tokens.slice(-1)[0]);
+        console.log(`Adding vote for ${tokens[1]}`);
+        this.countVoteFor(tokens[1]);
         break;
       default:
         console.log("Got some other message: " + message);
@@ -139,13 +141,8 @@ export class RaftNode {
         this.send = send;
         L`Connected. Waiting 4s.`
         setTimeout(() => {
-          L`WHERE WE LAST LEFT OFF:
-            * The send(JOIN) below does not send.
-            * As a result, peers never get added to the directory.
-            * As a result, every peer thinks it is a leader.
-          `
-          this.send(JOIN);
           randomPolling(this.onElectionTimeout);
+          setTimeout(() => this.send(JOIN), HEARTBEAT_TIMEOUT);
           setInterval(this.heartBeat, HEARTBEAT_TIMEOUT);
         }, 1000);
       });

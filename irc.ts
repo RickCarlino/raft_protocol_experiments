@@ -14,19 +14,21 @@ export function connection(handler: MessageHandler, name: string) {
   let last = timestamp();
   return new Promise<MessageSender>(function (resolve, reject) {
     var c = new irc.Client(IRC_SERVER, name, { channels: [IRC_CHANNEL] });
+    c.addListener("error", e => console.log(`${JSON.stringify(e)}`));
     console.log(`Connecting to ${IRC_CHANNEL} on ${IRC_SERVER} as ${name}`);
+    c.addListener("message", (from, _, msg) => handler(from, msg));
     c.addListener("connect", function () {
-      resolve(function (message: string) {
+      let x = "HERE: " + Object.keys(c.chans[IRC_CHANNEL].users).join(", ");
+      function sender(message: string) {
         if (timeDiff(last) < 1000) {
           console.log("flood protection" + timeDiff(last))
         } else {
           console.log("Sending mesage: " + message)
           c.say(IRC_CHANNEL, message);
         }
-      });
+      }
+      resolve(sender);
     });
-    c.addListener("error", e => console.log(`${JSON.stringify(e)}`));
-    c.addListener("message", (from, _, msg) => handler(from, msg));
   });
 }
 
