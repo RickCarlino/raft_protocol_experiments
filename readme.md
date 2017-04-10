@@ -21,10 +21,6 @@ npm start
 
 ```
 
-# Notes
-
- Not finished. Vote counting is broke, therefor leader election is broke.
-
 # TODO
 
  - [*] Communication layer
@@ -35,3 +31,10 @@ npm start
  - [] partition healing?
  - [] flash state to disk
  - [] writeup docs (TSDoc it up)
+
+# Last Left Off
+
+ * Leader election sorta-kinda-works.
+ * Leader will accept write commands like `set 5`.
+ * NEXT TASK: Start writing replication logic in `RaftNode#doWrite()`.
+ * I left some comments in the source of `doWrite()` and also half finished `peer_directory.ts`.

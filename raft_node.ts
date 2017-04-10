@@ -26,7 +26,7 @@ export class RaftNode {
   state: NODE_STATE = FOLLOWER;
   value = "~~Default value~~";
   electionTerm = 0;
-  get amLeader() { return this.peers.iAmLeader(); }
+  get amLeader() { return this.peers.currentWinner().name === this.name; }
   /** Handles inbound message. */
   messageHandler = (from: string, message: string) => {
     // TODO: Write a "Message" class for .head/.tail/.from support.
@@ -67,12 +67,18 @@ export class RaftNode {
     }
   }
 
+  doWrite(value: string) {
+    // Append log entry.
+    // Wait for followers to replicate.
+    // Commit once there is a majority.
+    // Notify leaders that you've commit.
+  }
+
   maybeWrite = (value: string) => {
     if (this.amLeader) {
-      this.send("I haven't written a means of commiting data yet, " +
-        "but if we had, I would be the leader.");
+      this.doWrite(value);
     } else {
-      L`Not leader, won't write.`
+      L`Not my responsiblity to write data.`
     }
   }
 
